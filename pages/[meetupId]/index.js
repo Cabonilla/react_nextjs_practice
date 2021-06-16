@@ -1,31 +1,32 @@
-import MeetupDetail from '../../components/meetups/MeetupDetail'
+import { MongoClient, ObjectId } from 'mongodb';
+import MeetupDetail from '../../components/meetups/MeetupDetail';
 
-function MeetupDetails() {
+function MeetupDetails(props) {
 	return (
 		<MeetupDetail
-			image='https://images.unsplash.com/photo-1558497513-f0133e055abf?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=675&q=80'
-			title='First Cleanup'
-			address='12424 S. Vampire Ave. RU 29291'
-			description='Very dirty.'
+			image={props.meetupData.image}
+			title={props.meetupData.title}
+			address={props.meetupData.address}
+			description={props.meetupData.description}
 		/>
 	)
 }
 
 export async function getStaticPaths() {
+	const client = await MongoClient.connect('mongodb+srv://cabonilla:mhXdCccKRGPrtGUn@cluster0.fbn8e.mongodb.net/meetups?retryWrites=true&w=majority');
+	const db = client.db();
+
+	const meetupsCollection = db.collection('meetups')
+
+	const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+	client.close();
+
 	return {
 		fallback: false,
-		paths: [
-			{
-				params: {
-					meetupId: 'm1'
-				},
-			},
-			{
-				params: {
-					meetupId: 'm2'
-				}
-			}
-		]
+		paths: meetups.map(meetup => ({
+			params: { meetupId: meetup._id.toString() }
+		}))
 	}
 }
 
@@ -33,15 +34,25 @@ export async function getStaticProps(context) {
 
 	const meetupId = context.params.meetupId
 
+	const client = await MongoClient.connect('mongodb+srv://cabonilla:mhXdCccKRGPrtGUn@cluster0.fbn8e.mongodb.net/meetups?retryWrites=true&w=majority');
+	const db = client.db();
+
+	const meetupsCollection = db.collection('meetups')
+
+	const selectedMeetup = await meetupsCollection.findOne({ _id: ObjectId(meetupId) })
+
+	client.close();
 	console.log(meetupId)
 
 	return {
 		props: {
-			image: 'https://images.unsplash.com/photo-1558497513-f0133e055abf?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=675&q=80',
-			id: meetupId,
-			title: 'First Cleanup',
-			address: '12424 S. Vampire Ave. RU 29291',
-			description: 'Very dirty.'
+			meetupData: {
+				id: selectedMeetup._id.toString(),
+				title: selectedMeetup.title,
+				address: selectedMeetup.address,
+				image: selectedMeetup.image,
+				id: selectedMeetup.description
+			}
 		}
 	}
 }
