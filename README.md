@@ -1,4 +1,4 @@
-# Next JS Practive
+# Next JS Practice
 
 A small repo for practicing Next JS with React.
 
