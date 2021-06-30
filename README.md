@@ -1,4 +1,4 @@
-# Next JS Practice
+# Next JS Practice / React Cleanup
 
 A small repo for practicing Next JS with React.
 
